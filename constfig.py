@@ -1,6 +1,7 @@
 import yaml
 import logging
 
+from base64 import b64decode
 from collections.abc import Iterable
 
 
@@ -16,6 +17,8 @@ class _C(object):
 
     def set_constants(self):
         # Constant values
+        self._B64_ONE_BY_ONE = b'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2NgAAIAAAUAAR4f7BQAAAAASUVORK5CYII='
+        self.ONE_BY_ONE = b64decode(self._B64_ONE_BY_ONE)
         self.HTTP_METHOD_POST = "POST"
         self.HTTP_METHOD_GET = "GET"
         self.HTTP_METHOD_DELETE = "DELETE"

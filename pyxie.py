@@ -1,12 +1,14 @@
-from flask import Flask
 from constfig import C
+from flask import Flask, Response
+
 
 pyxie = Flask(__name__)
 
 
 @pyxie.route("/", methods=[C.HTTP_METHOD_GET])
 def root():
-    return "Hello, PyXIE", 200
+    return Response(C.ONE_BY_ONE, mimetype="image/png")
+    # return "Hello, PyXIE", 200
 
 
 @pyxie.route("/register", methods=[C.HTTP_METHOD_POST])

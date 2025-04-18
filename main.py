@@ -1,4 +1,5 @@
 from flask import Flask
+from constfig import C
 
 pyxie = Flask(__name__)
 

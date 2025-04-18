@@ -16,7 +16,26 @@ class _C(object):
 
     def set_constants(self):
         # Constant values
-        pass
+        self.HTTP_METHOD_POST = "POST"
+        self.HTTP_METHOD_GET = "GET"
+        self.HTTP_METHOD_DELETE = "DELETE"
+        # self.HTTP_METHOD_PUT = "PUT"
+        # self.HTTP_METHOD_PATCH = "PATCH"
+        # self.HTTP_METHOD_OPTIONS = "OPTIONS"
+        # self.HTTP_METHOD_HEAD = "HEAD"
+        # self.HTTP_METHOD_CONNECT = "CONNECT"
+        # self.HTTP_METHOD_TRACE = "TRACE"
+        # self.HTTP_METHOD_ALL = [
+        #     self.HTTP_METHOD_POST,
+        #     self.HTTP_METHOD_GET,
+        #     self.HTTP_METHOD_DELETE,
+        #     self.HTTP_METHOD_PUT,
+        #     self.HTTP_METHOD_PATCH,
+        #     self.HTTP_METHOD_OPTIONS,
+        #     self.HTTP_METHOD_HEAD,
+        #     self.HTTP_METHOD_CONNECT,
+        #     self.HTTP_METHOD_TRACE,
+        # ]
 
     def load_config(self):
         try:

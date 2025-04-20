@@ -7,7 +7,7 @@ from flask import Flask, Response, request
 
 
 pyxie = Flask(C.APP_NAME)
-_data = DDB(size=C.RRD_MAX_SIZE)
+_data = DDB(max_size=C.RRD_MAX_SIZE)
 
 
 @pyxie.route("/", methods=[C.HTTP_METHOD_GET])
@@ -45,5 +45,5 @@ def main():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=C._LOG_LEVELS[C.LOG_LEVEL])
     main()

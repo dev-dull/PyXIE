@@ -17,26 +17,21 @@ def _validate_api_key():
     return False
 
 
-@pyxie.route("/", methods=[C.HTTP_METHOD_GET])
-def root():
-    now = time()  # epoch time
-    user_agent = request.headers.get(C.HTTP_HEADER_USER_AGENT)
-    C.LOG.debug(f"{len(_data)} User-Agent: {user_agent}")
-    _data + user_agent
-    return Response(C.ONE_BY_ONE, mimetype=C.HTTP_MIME_TYPE_PNG)
-
-
 @pyxie.route("/register", methods=[C.HTTP_METHOD_POST])
 def register():
     if _validate_api_key():
-        return "Register", 201
+        id = request.args.get("id")
+        _data.register(id)
+        C.LOG.debug(f"Registered ID: {id}")
+        return "Success", 201
     return "Unauthorized", 401
 
 
 @pyxie.route("/unregister", methods=[C.HTTP_METHOD_DELETE])
 def unregister():
     if _validate_api_key():
-        return "Unregister", 204
+        _data.unregister(request.args.get("id"))
+        return "Success", 204
     return "Unauthorized", 401
 
 
@@ -53,6 +48,17 @@ def metrics():
     if _validate_api_key():
         return "Metrics", 501  # Not Implemented
     return "Unauthorized", 401
+
+
+@pyxie.route("/", methods=[C.HTTP_METHOD_GET])
+def root():
+    now = time()  # epoch time
+    id = request.args.get("id")
+    user_agent = request.headers.get(C.HTTP_HEADER_USER_AGENT)
+    C.LOG.debug(f"{len(_data)} User-Agent: {user_agent}")
+    _data[id] = user_agent
+    return Response(C.ONE_BY_ONE, mimetype=C.HTTP_MIME_TYPE_PNG)
+
 
 
 def main():

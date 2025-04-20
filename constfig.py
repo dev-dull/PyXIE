@@ -1,6 +1,7 @@
 import yaml
 import logging
 
+from ddb import DDB
 from base64 import b64decode
 from collections.abc import Iterable
 
@@ -17,28 +18,15 @@ class _C(object):
 
     def set_constants(self):
         # Constant values
+        self.APP_NAME = "pyxie"
+        self.LOG = logging.getLogger(self.APP_NAME)
         self._B64_ONE_BY_ONE = b'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2NgAAIAAAUAAR4f7BQAAAAASUVORK5CYII='
         self.ONE_BY_ONE = b64decode(self._B64_ONE_BY_ONE)
         self.HTTP_METHOD_POST = "POST"
         self.HTTP_METHOD_GET = "GET"
         self.HTTP_METHOD_DELETE = "DELETE"
-        # self.HTTP_METHOD_PUT = "PUT"
-        # self.HTTP_METHOD_PATCH = "PATCH"
-        # self.HTTP_METHOD_OPTIONS = "OPTIONS"
-        # self.HTTP_METHOD_HEAD = "HEAD"
-        # self.HTTP_METHOD_CONNECT = "CONNECT"
-        # self.HTTP_METHOD_TRACE = "TRACE"
-        # self.HTTP_METHOD_ALL = [
-        #     self.HTTP_METHOD_POST,
-        #     self.HTTP_METHOD_GET,
-        #     self.HTTP_METHOD_DELETE,
-        #     self.HTTP_METHOD_PUT,
-        #     self.HTTP_METHOD_PATCH,
-        #     self.HTTP_METHOD_OPTIONS,
-        #     self.HTTP_METHOD_HEAD,
-        #     self.HTTP_METHOD_CONNECT,
-        #     self.HTTP_METHOD_TRACE,
-        # ]
+        self.HTTP_HEADER_USER_AGENT = "User-Agent"
+        self.HTTP_MIME_TYPE_PNG = "image/png"
 
     def load_config(self):
         try:

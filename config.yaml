@@ -1,2 +1,3 @@
 API_KEYS:
-  - ""
+  - "your-api-key-here"
+RRD_MAX_SIZE: 50

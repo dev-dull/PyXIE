@@ -1,14 +1,22 @@
+import logging
+
+from ddb import DDB
+from time import time
 from constfig import C
-from flask import Flask, Response
+from flask import Flask, Response, request
 
 
-pyxie = Flask(__name__)
+pyxie = Flask(C.APP_NAME)
+_data = DDB(size=C.RRD_MAX_SIZE)
 
 
 @pyxie.route("/", methods=[C.HTTP_METHOD_GET])
 def root():
-    return Response(C.ONE_BY_ONE, mimetype="image/png")
-    # return "Hello, PyXIE", 200
+    now = time()  # epoch time
+    user_agent = request.headers.get(C.HTTP_HEADER_USER_AGENT)
+    C.LOG.debug(f"{len(_data)} User-Agent: {user_agent}")
+    _data + user_agent
+    return Response(C.ONE_BY_ONE, mimetype=C.HTTP_MIME_TYPE_PNG)
 
 
 @pyxie.route("/register", methods=[C.HTTP_METHOD_POST])
@@ -37,4 +45,5 @@ def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     main()

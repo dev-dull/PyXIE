@@ -28,8 +28,12 @@ class _C(object):
         self.HTTP_METHOD_POST = "POST"
         self.HTTP_METHOD_GET = "GET"
         self.HTTP_METHOD_DELETE = "DELETE"
+
         self.HTTP_HEADER_USER_AGENT = "User-Agent"
+        self.HTTP_HEADER_X_API_KEY = "X-Api-Key"
+
         self.HTTP_MIME_TYPE_PNG = "image/png"
+
         self._LOG_LEVELS = {
             "CRITICAL": logging.CRITICAL,
             "ERROR": logging.ERROR,

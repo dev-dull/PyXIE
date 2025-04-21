@@ -1,7 +1,8 @@
 import json
 
-from time import time, sleep
 from ua_parser import parse
+from time import time, sleep
+from collections import defaultdict
 
 # {
 #     "id1234": {
@@ -91,3 +92,10 @@ class _DDB(dict):
         while len(self) > self._max_size:
             # it's silly that we have to cast to list here, but dict_keys is not subscriptable
             del self[list(self.keys())[0]]
+
+    @property
+    def family_counts(self):
+        family = defaultdict(int)
+        for k in self.keys():
+            family[self[k].user_agent.family] += 1
+        return family

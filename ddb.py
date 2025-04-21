@@ -1,4 +1,7 @@
+import json
+
 from time import time, sleep
+from ua_parser import parse
 
 # {
 #     "id1234": {
@@ -29,18 +32,40 @@ class DDB(dict):
         if id in self:
             return self.pop(id)
 
-    def __setitem__(self, id, value):
+    def __setitem__(self, id, user_agent):
         if id in self:
-            self[id] + value
+            self[id] + user_agent
+            with open("uadb.json", "w") as fout:
+                json.dump(self, fout, indent=2)
+                fout.flush()
+                fout.truncate()
             return self
         elif id not in self:
-          raise KeyError(f"ID {id} not registered")
+            raise KeyError(f"ID {id} not registered")
 
-        raise ValueError(f"Invalid value {value} for ID {id}. Expected _DDB instance.")
+        raise ValueError(f"Invalid user_agent value {user_agent} for ID {id}. Expected _DDB instance.")
 
     def _cleanup(self):
         for v in self.values():
             v._cleanup()
+
+    def dump(self, filename="uadb.json"):
+        with open(filename, "w") as fout:
+            json.dump(self, fout, indent=2, default=lambda o: o.string)
+            fout.flush()
+            fout.truncate()
+
+    def load(self, filename="uadb.json"):
+        try:
+            with open(filename, "r") as fin:
+                data = json.load(fin)
+                for k, v in data.items():
+                    if isinstance(v, dict):
+                        super().__setitem__(k, _DDB(v, max_size=self._max_size))
+                    else:
+                        raise TypeError(f"Invalid type for value {v} in dictionary. Expected dict, got {type(v)}")
+        except FileNotFoundError:
+            pass
 
 
 class _DDB(dict):
@@ -49,9 +74,6 @@ class _DDB(dict):
         self._max_size = max_size
 
         self._KEY_TIMESERIES = "timeseries"
-        self._KEY_REGISTERED_IDs = "registered_ids"
-
-        self[self._KEY_REGISTERED_IDs] = dict()
 
     def __add__(self, user_agent):
         now = time()
@@ -60,6 +82,9 @@ class _DDB(dict):
         self[now] = user_agent
         self._cleanup()
         return self
+
+    def __getitem__(self, timestamp):
+        return parse(super().__getitem__(timestamp))
 
     def _cleanup(self):
         now = time()

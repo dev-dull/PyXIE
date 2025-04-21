@@ -55,10 +55,9 @@ def root():
     now = time()  # epoch time
     id = request.args.get("id")
     user_agent = request.headers.get(C.HTTP_HEADER_USER_AGENT)
-    C.LOG.debug(f"{len(_data)} User-Agent: {user_agent}")
+    C.LOG.debug(f"{len(_data[id])} User-Agent: {user_agent}")
     _data[id] = user_agent
     return Response(C.ONE_BY_ONE, mimetype=C.HTTP_MIME_TYPE_PNG)
-
 
 
 def main():

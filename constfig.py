@@ -22,6 +22,7 @@ class _C(object):
         self.APP_NAME = "pyxie"
         self.LOG = logging.getLogger(self.APP_NAME)
         self._B64_ONE_BY_ONE = (
+            # Base64 encoded 1x1 pixel transparent PNG
             b"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2NgAAIAAAUAAR4f7BQAAAAASUVORK5CYII="
         )
         self.ONE_BY_ONE = b64decode(self._B64_ONE_BY_ONE)
@@ -41,6 +42,19 @@ class _C(object):
             "INFO": logging.INFO,
             "DEBUG": logging.DEBUG,
         }
+
+        self.FLASK_REQUEST_KEY_CONTENT_TYPE = "content_type"
+        self.FLASK_REQUEST_KEY_HEADERS = "headers"
+        self.FLASK_REQUEST_KEY_REFERRER = "referrer"
+        self.FLASK_REQUEST_KEY_REMOTE_ADDR = "remote_addr"
+        self.FLASK_REQUEST_KEY_USER_AGENT = "user_agent"
+        self.FLASK_REQUEST_KEYS = [
+            self.FLASK_REQUEST_KEY_CONTENT_TYPE,
+            self.FLASK_REQUEST_KEY_HEADERS,
+            self.FLASK_REQUEST_KEY_REFERRER,
+            self.FLASK_REQUEST_KEY_REMOTE_ADDR,
+            self.FLASK_REQUEST_KEY_USER_AGENT,
+        ]
 
     def load_config(self):
         try:

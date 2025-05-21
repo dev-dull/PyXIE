@@ -1,8 +1,10 @@
 import json
 
+from constfig import C
 from flask import request
 from ua_parser import parse
 from time import time, sleep
+from functools import lru_cache
 from collections import defaultdict
 
 ## Shape of the data that gets saved to disk:
@@ -112,24 +114,8 @@ from collections import defaultdict
 
 # ddb: dumb database
 class DDB(dict):
-    class _C(object):
-        FLASK_REQUEST_KEY_CONTENT_TYPE = "content_type"
-        FLASK_REQUEST_KEY_HEADERS = "headers"
-        FLASK_REQUEST_KEY_REFERRER = "referrer"
-        FLASK_REQUEST_KEY_REMOTE_ADDR = "remote_addr"
-        FLASK_REQUEST_KEY_USER_AGENT = "user_agent"
-        FLASK_REQUEST_SERIALIZERS = {
-            # k,v pair where the key is the name of a property in Flask's request object, and the value is a function that turns the value into a type that
-            # json.dump() can evaluate for saving to disk.
-            FLASK_REQUEST_KEY_CONTENT_TYPE: lambda content_type: content_type,
-            FLASK_REQUEST_KEY_HEADERS: lambda headers: dict(headers),  # Saving headers has the unintended side effect of saving the user agent a second time.
-            FLASK_REQUEST_KEY_REFERRER: lambda referrer: referrer,
-            FLASK_REQUEST_KEY_REMOTE_ADDR: lambda remote_addr: remote_addr,
-            FLASK_REQUEST_KEY_USER_AGENT: lambda user_agent: user_agent.string,
-        }
-
     def __init__(self, d={}, max_size=10000):
-        # TODO - trying to maintain being dict compatible is becoming a mess with the call to super, the call to load, and the below d.items loop. Something needs to change here.
+        # TODO - trying to retain dict compatibility is becoming a mess with the call to super, the call to load, and the below d.items loop. Something needs to change here.
         super().__init__(d)
         self._max_size = max_size
 
@@ -155,7 +141,7 @@ class DDB(dict):
     def __call__(self):
         id = request.args.get("id")
         data_set = {}
-        for flask_request_key, serializer in self._C.FLASK_REQUEST_SERIALIZERS.items():
+        for flask_request_key, serializer in C.FLASK_REQUEST_SERIALIZERS.items():
             data_set[flask_request_key] = serializer(getattr(request, flask_request_key, None))
         self[id] = data_set
         return self
@@ -189,6 +175,7 @@ class DDB(dict):
                     else:
                         raise TypeError(f"Invalid type for value {v} in dictionary. Expected dict, got {type(v)}")
         except FileNotFoundError:
+            # self.C.LOG.warning(f"DDB file {filename} not found. Starting with empty database.")
             pass
 
     @property
@@ -200,11 +187,29 @@ class DDB(dict):
         return browser_family
 
     @property
+    def browser_family_counts_by_remote_addr(self):
+        browser_family = defaultdict(lambda: defaultdict(int))
+        for id, ddb in self.items():
+            for f, count in ddb.browser_family_counts_by_remote_addr.items():
+                for remote_addr, count in count.items():
+                    browser_family[f][remote_addr] += count
+        return browser_family
+
+    @property
     def os_family_counts(self):
         os_family = defaultdict(int)
         for id, ddb in self.items():
             for f, count in ddb.os_family_counts.items():
                 os_family[f] += count
+        return os_family
+
+    @property
+    def os_family_counts_by_remote_addr(self):
+        os_family = defaultdict(lambda: defaultdict(int))
+        for id, ddb in self.items():
+            for f, count in ddb.os_family_counts_by_remote_addr.items():
+                for remote_addr, count in count.items():
+                    os_family[f][remote_addr] += count
         return os_family
 
 
@@ -222,10 +227,8 @@ class _DDB(dict):
         return self
 
     def _get_user_agent(self, timestamp):
-        # o = parse(self[timestamp]['user_agent'])
-        # import logging
-        # logging.info(str(o.os))
-        return parse(self[timestamp]['user_agent'])
+        a = parse(self[timestamp]['user_agent'])
+        return a
 
     def _cleanup(self):
         now = time()
@@ -237,7 +240,17 @@ class _DDB(dict):
     def browser_family_counts(self):
         browser_family = defaultdict(int)
         for timestamp in self.keys():
-            browser_family[self._get_user_agent(timestamp).user_agent.family] += 1
+            browser = self._get_user_agent(timestamp)
+            browser_family[browser.user_agent.family if browser else "Unknown"] += 1
+        return browser_family
+
+    @property
+    def browser_family_counts_by_remote_addr(self):
+        browser_family = defaultdict(lambda: defaultdict(int))
+        for timestamp in self.keys():
+            browser = self._get_user_agent(timestamp)
+            remote_addr = self[timestamp]['remote_addr']
+            browser_family[remote_addr][browser.user_agent.family if browser else "Unknown"] += 1
         return browser_family
 
     @property
@@ -246,4 +259,13 @@ class _DDB(dict):
         for timestamp in self.keys():
             os = self._get_user_agent(timestamp).os
             os_family[os.family if os else "Unknown"] += 1
+        return os_family
+
+    @property
+    def os_family_counts_by_remote_addr(self):
+        os_family = defaultdict(lambda: defaultdict(int))
+        for timestamp in self.keys():
+            _os = self._get_user_agent(timestamp).os  # '_os' has leading underscore to avoid conflict with the 'os' module
+            remote_addr = self[timestamp]['remote_addr']
+            os_family[remote_addr][_os.family if _os else "Unknown"] += 1
         return os_family

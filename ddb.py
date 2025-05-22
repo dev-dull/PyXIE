@@ -212,6 +212,23 @@ class DDB(dict):
                     os_family[f][remote_addr] += count
         return os_family
 
+    @property
+    def referrer_counts(self):
+        referrers = defaultdict(int)
+        for id, ddb in self.items():
+            for f, count in ddb.referrer_counts.items():
+                referrers[f] += count
+        return referrers
+
+    @property
+    def referrer_counts_by_remote_addr(self):
+        referrers = defaultdict(lambda: defaultdict(int))
+        for id, ddb in self.items():
+            for f, count in ddb.referrer_counts_by_remote_addr.items():
+                for remote_addr, count in count.items():
+                    referrers[f][remote_addr] += count
+        return referrers
+
 
 class _DDB(dict):
     def __init__(self, d={}, max_size=10000):
@@ -257,15 +274,32 @@ class _DDB(dict):
     def os_family_counts(self):
         os_family = defaultdict(int)
         for timestamp in self.keys():
-            os = self._get_user_agent(timestamp).os
-            os_family[os.family if os else "Unknown"] += 1
+            _os = self._get_user_agent(timestamp).os  # '_os' has leading underscore to avoid conflicts with the 'os' module
+            os_family[_os.family if _os else "Unknown"] += 1
         return os_family
 
     @property
     def os_family_counts_by_remote_addr(self):
         os_family = defaultdict(lambda: defaultdict(int))
         for timestamp in self.keys():
-            _os = self._get_user_agent(timestamp).os  # '_os' has leading underscore to avoid conflict with the 'os' module
+            _os = self._get_user_agent(timestamp).os  # '_os' has leading underscore to avoid conflicts with the 'os' module
             remote_addr = self[timestamp]['remote_addr']
             os_family[remote_addr][_os.family if _os else "Unknown"] += 1
         return os_family
+
+    @property
+    def referrer_counts(self):
+        referrers = defaultdict(int)
+        for timestamp in self.keys():
+            referrer = self[timestamp]['referrer']
+            referrers[referrer if referrer else "Unknown"] += 1
+        return referrers
+
+    @property
+    def referrer_counts_by_remote_addr(self):
+        referrers = defaultdict(lambda: defaultdict(int))
+        for timestamp in self.keys():
+            referrer = self[timestamp]['referrer']
+            remote_addr = self[timestamp]['remote_addr']
+            referrers[remote_addr][referrer if referrer else "Unknown"] += 1
+        return referrers

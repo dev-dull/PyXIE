@@ -33,7 +33,7 @@ def unregister():
 
 @pyxie.route("/stats", methods=[C.HTTP_METHOD_GET])
 def stats():
-    return _data.os_family_counts_by_remote_addr, 200
+    return _data.referrer_counts, 200
     if _validate_api_key():
         return _data.browser_family_counts_by_remote_addr, 200
     return "Unauthorized", 401

@@ -1,7 +1,6 @@
 import yaml
 import logging
 
-from ddb import DDB
 from base64 import b64decode
 from collections.abc import Iterable
 
@@ -22,6 +21,7 @@ class _C(object):
         self.APP_NAME = "pyxie"
         self.LOG = logging.getLogger(self.APP_NAME)
         self._B64_ONE_BY_ONE = (
+            # Base64 encoded 1x1 pixel transparent PNG
             b"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQIW2NgAAIAAAUAAR4f7BQAAAAASUVORK5CYII="
         )
         self.ONE_BY_ONE = b64decode(self._B64_ONE_BY_ONE)
@@ -40,6 +40,22 @@ class _C(object):
             "WARNING": logging.WARNING,
             "INFO": logging.INFO,
             "DEBUG": logging.DEBUG,
+        }
+        self.LOG = logging.basicConfig(level=self._LOG_LEVELS[self.LOG_LEVEL])
+
+        self.FLASK_REQUEST_KEY_CONTENT_TYPE = "content_type"
+        self.FLASK_REQUEST_KEY_HEADERS = "headers"
+        self.FLASK_REQUEST_KEY_REFERRER = "referrer"
+        self.FLASK_REQUEST_KEY_REMOTE_ADDR = "remote_addr"
+        self.FLASK_REQUEST_KEY_USER_AGENT = "user_agent"
+        self.FLASK_REQUEST_SERIALIZERS = {
+            # k,v pair where the key is the name of a property in Flask's request object, and the value is a function that turns the value into a type that
+            # json.dump() can evaluate for saving to disk.
+            self.FLASK_REQUEST_KEY_CONTENT_TYPE: lambda content_type: content_type,
+            self.FLASK_REQUEST_KEY_HEADERS: lambda headers: dict(headers),  # Saving headers has the unintended side effect of saving the user agent a second time.
+            self.FLASK_REQUEST_KEY_REFERRER: lambda referrer: referrer,
+            self.FLASK_REQUEST_KEY_REMOTE_ADDR: lambda remote_addr: remote_addr,
+            self.FLASK_REQUEST_KEY_USER_AGENT: lambda user_agent: user_agent.string,
         }
 
     def load_config(self):

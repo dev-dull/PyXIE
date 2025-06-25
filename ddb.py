@@ -180,56 +180,109 @@ class DDB(dict):
 
     @property
     def browser_family_counts(self):
-        browser_family = defaultdict(int)
+        browser_family_stats = defaultdict(int)
         for id, ddb in self.items():
-            for f, count in ddb.browser_family_counts.items():
-                browser_family[f] += count
-        return browser_family
+            for browser_family, count_val in ddb.browser_family_counts.items():
+                browser_family_stats[browser_family] += count_val
+        return browser_family_stats
+
+    @property
+    def browser_family_counts_by_id(self):
+        browser_family_stats = defaultdict(lambda: defaultdict(int))
+        for id, ddb in self.items():
+            for browser_family, count in ddb.browser_family_counts_by_remote_addr.items():
+                for remote_addr, count_val in count.items():
+                    browser_family_stats[id][browser_family] += count_val
+        return browser_family_stats
 
     @property
     def browser_family_counts_by_remote_addr(self):
-        browser_family = defaultdict(lambda: defaultdict(int))
+        browser_family_stats = defaultdict(lambda: defaultdict(int))
         for id, ddb in self.items():
-            for f, count in ddb.browser_family_counts_by_remote_addr.items():
-                for remote_addr, count in count.items():
-                    browser_family[f][remote_addr] += count
-        return browser_family
+            for browser_family, count in ddb.browser_family_counts_by_remote_addr.items():
+                for remote_addr, count_val in count.items():
+                    browser_family_stats[browser_family][remote_addr] += count_val
+        return browser_family_stats
+
+    @property
+    def browser_family_counts_by_id_by_remote_addr(self):
+        browser_family_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+        for id, ddb in self.items():
+            for browser_family, count in ddb.browser_family_counts_by_remote_addr.items():
+                for remote_addr, count_val in count.items():
+                    browser_family_stats[id][browser_family][remote_addr] += count_val
+        return browser_family_stats
+
 
     @property
     def os_family_counts(self):
-        os_family = defaultdict(int)
+        os_family_stats = defaultdict(int)
         for id, ddb in self.items():
-            for f, count in ddb.os_family_counts.items():
-                os_family[f] += count
-        return os_family
+            for os_family, count_val in ddb.os_family_counts.items():
+                os_family_stats[os_family] += count_val
+        return os_family_stats
+
+    @property
+    def os_family_counts_by_id(self):
+        os_family_stats = defaultdict(lambda: defaultdict(int))
+        for id, ddb in self.items():
+            for os_family, count in ddb.os_family_counts_by_remote_addr.items():
+                for remote_addr, count_val in count.items():
+                    os_family_stats[id][os_family] += count_val
+        return os_family_stats
 
     @property
     def os_family_counts_by_remote_addr(self):
-        os_family = defaultdict(lambda: defaultdict(int))
+        os_family_stats = defaultdict(lambda: defaultdict(int))
         for id, ddb in self.items():
-            for f, count in ddb.os_family_counts_by_remote_addr.items():
-                for remote_addr, count in count.items():
-                    os_family[f][remote_addr] += count
-        return os_family
+            for os_family, count in ddb.os_family_counts_by_remote_addr.items():
+                for remote_addr, count_val in count.items():
+                    os_family_stats[os_family][remote_addr] += count_val
+        return os_family_stats
+
+    @property
+    def os_family_counts_by_id_by_remote_addr(self):
+        os_family_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+        for id, ddb in self.items():
+            for os_family, count in ddb.os_family_counts_by_remote_addr.items():
+                for remote_addr, count_val in count.items():
+                    os_family_stats[id][os_family][remote_addr] += count_val
+        return os_family_stats
 
     @property
     def referrer_counts(self):
-        referrers = defaultdict(int)
+        referrers_stats = defaultdict(int)
         for id, ddb in self.items():
-            for f, count in ddb.referrer_counts.items():
-                referrers[f] += count
-        return referrers
+            for referrer, count_val in ddb.referrer_counts.items():
+                referrers_stats[referrer] += count_val
+        return referrers_stats
+
+    @property
+    def referrer_counts_by_id(self):
+        referrer_stats = defaultdict(lambda: defaultdict(int))
+        for id, ddb in self.items():
+            for referrer, count in ddb.referrer_counts_by_remote_addr.items():
+                for remote_addr, count_val in count.items():
+                    referrer_stats[id][remote_addr] += count_val
+        return referrer_stats
 
     @property
     def referrer_counts_by_remote_addr(self):
-        referrers = defaultdict(lambda: defaultdict(int))
+        referrer_stats = defaultdict(lambda: defaultdict(int))
         for id, ddb in self.items():
-            for f, count in ddb.referrer_counts_by_remote_addr.items():
-                for remote_addr, count in count.items():
-                    referrers[f][remote_addr] += count
-        return referrers
+            for referrer, count in ddb.referrer_counts_by_remote_addr.items():
+                for remote_addr, count_val in count.items():
+                    referrer_stats[referrer][remote_addr] += count_val
+        return referrer_stats
 
-    ## TODO: We need to do all the same stats, but by unique ID.
+    @property
+    def referrer_counts_by_id_by_remote_addr(self):
+        referrer_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+        for id, ddb in self.items():
+            for referrer, count in ddb.referrer_counts_by_remote_addr.items():
+                for remote_addr, count_val in count.items():
+                    referrer_stats[id][referrer][remote_addr] += count_val
+        return referrer_stats
 
 
 class _DDB(dict):

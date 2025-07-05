@@ -231,13 +231,23 @@ class DDB(dict):
                     os_family_stats[id][os_family] += count_val
         return os_family_stats
 
-    @property
+    # @property  # old way
+    # def os_family_counts_by_remote_addr(self):
+    #     os_family_stats = defaultdict(lambda: defaultdict(int))
+    #     for id, ddb in self.items():
+    #         for os_family, count in ddb.os_family_counts_by_remote_addr.items():
+    #             for remote_addr, count_val in count.items():
+    #                 os_family_stats[os_family][remote_addr] += count_val
+    #     return os_family_stats
+
+    @property  # New way with method re-use
     def os_family_counts_by_remote_addr(self):
+        detailed_os_family_stats = self.os_family_counts_by_id_by_remote_addr
         os_family_stats = defaultdict(lambda: defaultdict(int))
-        for id, ddb in self.items():
-            for os_family, count in ddb.os_family_counts_by_remote_addr.items():
-                for remote_addr, count_val in count.items():
-                    os_family_stats[os_family][remote_addr] += count_val
+        for id, remote_addr_stats in detailed_os_family_stats.items():
+            for remote_addr, os_family in remote_addr_stats.items():
+                for os_family, count_val in os_family.items():
+                    os_family_stats[remote_addr][os_family] += count_val
         return os_family_stats
 
     @property

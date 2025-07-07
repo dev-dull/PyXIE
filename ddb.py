@@ -229,17 +229,18 @@ class DDB(dict):
 
     # def _get_counts(self, )
 
+
 class _DDB(dict):
     def __init__(self, d={}, max_size=10000):
         for k, v in d.items():
-            self[k] = v #_db_record(v)
+            self[k] = v  # _db_record(v)
         self._max_size = max_size
 
     def __add__(self, user_data):
         now = time()
         while now in self:
             sleep(0.1)
-        self[now] = user_data #_db_record(user_data)
+        self[now] = user_data  # _db_record(user_data)
         self._cleanup()
         return self
 
@@ -250,15 +251,15 @@ class _DDB(dict):
 
     @property
     def browser_family_counts(self):
-        return self._get_counts('family', parents=['user_agent', "user_agent"])
+        return self._get_counts("family", parents=["user_agent", "user_agent"])
 
     @property
     def os_family_counts(self):
-        return self._get_counts('family', parents=['user_agent', 'os'])
+        return self._get_counts("family", parents=["user_agent", "os"])
 
     @property
     def referrer_counts(self):
-        return self._get_counts('referrer')
+        return self._get_counts("referrer")
 
     def _get_counts(self, property, parents=[]):
         return_data = defaultdict(lambda: defaultdict(int))
@@ -268,6 +269,6 @@ class _DDB(dict):
                 reference_object = reference_object.get(parent) or "Unknown"
 
             key = reference_object.get(property) or "Unknown"
-            remote_addr = self[timestamp]['remote_addr']
+            remote_addr = self[timestamp]["remote_addr"]
             return_data[remote_addr][key] += 1
         return return_data

@@ -47,26 +47,26 @@ class _C(object):
         def user_agent_evaluator(user_agent):
             agent = parse(user_agent.string)
             return {
-                'device': {
-                    'brand': getattr(getattr(agent, 'device'), 'brand', None), # agent.device.brand,
-                    'family': getattr(getattr(agent, 'device'), 'family', None),
-                    'model': getattr(getattr(agent, 'device'), 'model', None)
+                "device": {
+                    "brand": getattr(getattr(agent, "device"), "brand", None),  # agent.device.brand,
+                    "family": getattr(getattr(agent, "device"), "family", None),
+                    "model": getattr(getattr(agent, "device"), "model", None),
                 },
-                'os': {
-                    'family': getattr(getattr(agent, 'os'), 'family', None), #agent.os.family,
-                    'major': getattr(getattr(agent, 'os'), 'major', None),
-                    'minor': getattr(getattr(agent, 'os'), 'minor', None),
-                    'patch': getattr(getattr(agent, 'os'), 'patch', None),
-                    'patch_minor': getattr(getattr(agent, 'os'), 'patch_minor', None)
+                "os": {
+                    "family": getattr(getattr(agent, "os"), "family", None),  # agent.os.family,
+                    "major": getattr(getattr(agent, "os"), "major", None),
+                    "minor": getattr(getattr(agent, "os"), "minor", None),
+                    "patch": getattr(getattr(agent, "os"), "patch", None),
+                    "patch_minor": getattr(getattr(agent, "os"), "patch_minor", None),
                 },
-                'user_agent': {
-                    'family': getattr(getattr(agent, 'user_agent'), 'family', None), #agent.user_agent.family,
-                    'major': getattr(getattr(agent, 'user_agent'), 'major', None),
-                    'minor': getattr(getattr(agent, 'user_agent'), 'minor', None),
-                    'patch': getattr(getattr(agent, 'user_agent'), 'patch', None),
-                    'patch_minor': getattr(getattr(agent, 'user_agent'), 'patch_minor', None),
+                "user_agent": {
+                    "family": getattr(getattr(agent, "user_agent"), "family", None),  # agent.user_agent.family,
+                    "major": getattr(getattr(agent, "user_agent"), "major", None),
+                    "minor": getattr(getattr(agent, "user_agent"), "minor", None),
+                    "patch": getattr(getattr(agent, "user_agent"), "patch", None),
+                    "patch_minor": getattr(getattr(agent, "user_agent"), "patch_minor", None),
                 },
-                'string': user_agent.string,
+                "string": user_agent.string,
             }
 
         self.FLASK_REQUEST_KEY_CONTENT_TYPE = "content_type"
@@ -78,10 +78,12 @@ class _C(object):
             # k,v pair where the key is the name of a property in Flask's request object, and the value is a function that turns the value into a type that
             # json.dump() can evaluate for saving to disk.
             self.FLASK_REQUEST_KEY_CONTENT_TYPE: lambda content_type: content_type,
-            self.FLASK_REQUEST_KEY_HEADERS: lambda headers: dict(headers),  # Saving headers has the unintended side effect of saving the user agent a second time.
+            self.FLASK_REQUEST_KEY_HEADERS: lambda headers: dict(
+                headers
+            ),  # Saving headers has the unintended side effect of saving the user agent a second time.
             self.FLASK_REQUEST_KEY_REFERRER: lambda referrer: referrer,
             self.FLASK_REQUEST_KEY_REMOTE_ADDR: lambda remote_addr: remote_addr,
-            self.FLASK_REQUEST_KEY_USER_AGENT: user_agent_evaluator
+            self.FLASK_REQUEST_KEY_USER_AGENT: user_agent_evaluator,
         }
 
     def load_config(self):

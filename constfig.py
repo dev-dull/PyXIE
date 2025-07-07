@@ -1,6 +1,7 @@
 import yaml
 import logging
 
+from ua_parser import parse
 from base64 import b64decode
 from collections.abc import Iterable
 
@@ -29,7 +30,7 @@ class _C(object):
         self.HTTP_METHOD_GET = "GET"
         self.HTTP_METHOD_DELETE = "DELETE"
 
-        self.HTTP_HEADER_USER_AGENT = "User-Agent"
+        # self.HTTP_HEADER_USER_AGENT = "User-Agent"
         self.HTTP_HEADER_X_API_KEY = "X-Api-Key"
 
         self.HTTP_MIME_TYPE_PNG = "image/png"
@@ -43,6 +44,21 @@ class _C(object):
         }
         self.LOG = logging.basicConfig(level=self._LOG_LEVELS[self.LOG_LEVEL])
 
+        def user_agent_evaluator(user_agent):
+            print(dir(user_agent.browser))
+            agent = parse(user_agent.string)
+            references = [
+                ['device', 'brand'], ['device', 'family'], ['device', 'model'],
+                ['os', 'family'], ['os', 'major'], ['os', 'minor'], ['os', 'patch'], ['os', 'patch_minor'],
+                ['user_agent', 'family'], ['user_agent', 'major'], ['user_agent', 'minor'], ['user_agent', 'patch'], ['user_agent', 'patch_minor'],
+            ]
+            return _user_agent_evaluator(agent, references)
+
+        def _user_agent_evaluator(agent, references, dataset={}):
+            if references:
+                dataset[references[0]] = _user_agent_evaluator(agent[references[0]], references[1:], dataset=dataset)
+            return dataset
+
         self.FLASK_REQUEST_KEY_CONTENT_TYPE = "content_type"
         self.FLASK_REQUEST_KEY_HEADERS = "headers"
         self.FLASK_REQUEST_KEY_REFERRER = "referrer"
@@ -55,7 +71,7 @@ class _C(object):
             self.FLASK_REQUEST_KEY_HEADERS: lambda headers: dict(headers),  # Saving headers has the unintended side effect of saving the user agent a second time.
             self.FLASK_REQUEST_KEY_REFERRER: lambda referrer: referrer,
             self.FLASK_REQUEST_KEY_REMOTE_ADDR: lambda remote_addr: remote_addr,
-            self.FLASK_REQUEST_KEY_USER_AGENT: lambda user_agent: user_agent.string,
+            self.FLASK_REQUEST_KEY_USER_AGENT: user_agent_evaluator
         }
 
     def load_config(self):

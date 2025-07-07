@@ -45,19 +45,29 @@ class _C(object):
         self.LOG = logging.basicConfig(level=self._LOG_LEVELS[self.LOG_LEVEL])
 
         def user_agent_evaluator(user_agent):
-            print(dir(user_agent.browser))
             agent = parse(user_agent.string)
-            references = [
-                ['device', 'brand'], ['device', 'family'], ['device', 'model'],
-                ['os', 'family'], ['os', 'major'], ['os', 'minor'], ['os', 'patch'], ['os', 'patch_minor'],
-                ['user_agent', 'family'], ['user_agent', 'major'], ['user_agent', 'minor'], ['user_agent', 'patch'], ['user_agent', 'patch_minor'],
-            ]
-            return _user_agent_evaluator(agent, references)
-
-        def _user_agent_evaluator(agent, references, dataset={}):
-            if references:
-                dataset[references[0]] = _user_agent_evaluator(agent[references[0]], references[1:], dataset=dataset)
-            return dataset
+            return {
+                'device': {
+                    'brand': getattr(getattr(agent, 'device'), 'brand', None), # agent.device.brand,
+                    'family': getattr(getattr(agent, 'device'), 'family', None),
+                    'model': getattr(getattr(agent, 'device'), 'model', None)
+                },
+                'os': {
+                    'family': getattr(getattr(agent, 'os'), 'family', None), #agent.os.family,
+                    'major': getattr(getattr(agent, 'os'), 'major', None),
+                    'minor': getattr(getattr(agent, 'os'), 'minor', None),
+                    'patch': getattr(getattr(agent, 'os'), 'patch', None),
+                    'patch_minor': getattr(getattr(agent, 'os'), 'patch_minor', None)
+                },
+                'user_agent': {
+                    'family': getattr(getattr(agent, 'user_agent'), 'family', None), #agent.user_agent.family,
+                    'major': getattr(getattr(agent, 'user_agent'), 'major', None),
+                    'minor': getattr(getattr(agent, 'user_agent'), 'minor', None),
+                    'patch': getattr(getattr(agent, 'user_agent'), 'patch', None),
+                    'patch_minor': getattr(getattr(agent, 'user_agent'), 'patch_minor', None),
+                },
+                'string': user_agent.string,
+            }
 
         self.FLASK_REQUEST_KEY_CONTENT_TYPE = "content_type"
         self.FLASK_REQUEST_KEY_HEADERS = "headers"

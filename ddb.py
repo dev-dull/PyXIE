@@ -233,7 +233,6 @@ class _DDB(dict):
     def __init__(self, d={}, max_size=10000):
         for k, v in d.items():
             self[k] = v #_db_record(v)
-        print(self.keys())
         self._max_size = max_size
 
     def __add__(self, user_data):
@@ -271,5 +270,4 @@ class _DDB(dict):
             key = reference_object.get(property) or "Unknown"
             remote_addr = self[timestamp]['remote_addr']
             return_data[remote_addr][key] += 1
-        print(json.dumps(return_data, indent=2))
         return return_data

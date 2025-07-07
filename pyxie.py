@@ -57,7 +57,7 @@ def root():
 
 
 def main():
-    pyxie.run()
+    pyxie.run(host=C.LISTEN_IP, port=C.LISTEN_PORT)
 
 
 if __name__ == "__main__":

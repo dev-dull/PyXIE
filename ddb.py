@@ -202,32 +202,23 @@ class DDB(dict):
 
     @property
     def browser_family_counts(self):
-        browser_family_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
-        for id, ddb in self.items():
-            for browser_family, count in ddb.browser_family_counts.items():
-                for remote_addr, count_val in count.items():
-                    browser_family_stats[id][browser_family][remote_addr] += count_val
-        return browser_family_stats
+        return self._get_counts("browser_family_counts")
 
     @property
     def os_family_counts(self):
-        os_family_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
-        for id, ddb in self.items():
-            for os_family, count in ddb.os_family_counts.items():
-                for remote_addr, count_val in count.items():
-                    os_family_stats[id][os_family][remote_addr] += count_val
-        return os_family_stats
+        return self._get_counts("os_family_counts")
 
     @property
     def referrer_counts(self):
-        referrer_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
-        for id, ddb in self.items():
-            for referrer, count in ddb.referrer_counts.items():
-                for remote_addr, count_val in count.items():
-                    referrer_stats[id][referrer][remote_addr] += count_val
-        return referrer_stats
+        return self._get_counts("referrer_counts")
 
-    # def _get_counts(self, )
+    def _get_counts(self, property):
+        stats = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+        for id, ddb in self.items():
+            for referrer, count in getattr(ddb, property).items():
+                for value, _count in count.items():
+                    stats[id][referrer][value] += _count
+        return stats
 
 
 class _DDB(dict):

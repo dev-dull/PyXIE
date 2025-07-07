@@ -2,24 +2,22 @@ import json
 
 from constfig import C
 from flask import request
-from ua_parser import parse
 from time import time, sleep
-from functools import lru_cache
 from collections import defaultdict
 
 ## Shape of the data that gets saved to disk:
 # {
-#   "registered-test-id": {
-#     "1746643582.796701": {
+#   "test": {
+#     "1751850528.990112": {
 #       "content_type": null,
 #       "headers": {
-#         "Host": "127.0.0.1:5000",
-#         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:137.0) Gecko/20100101 Firefox/137.0",
+#         "Host": "localhost:5000",
+#         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:140.0) Gecko/20100101 Firefox/140.0",
 #         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 #         "Accept-Language": "en-US,en;q=0.5",
 #         "Accept-Encoding": "gzip, deflate, br, zstd",
 #         "Connection": "keep-alive",
-#         "Cookie": "oc_sessionPassphrase=nnn; ocqov586km8r=nnn",
+#         "Cookie": "_ssss=2|88888...aaaaaa",
 #         "Upgrade-Insecure-Requests": "1",
 #         "Sec-Fetch-Dest": "document",
 #         "Sec-Fetch-Mode": "navigate",
@@ -31,7 +29,28 @@ from collections import defaultdict
 #       },
 #       "referrer": null,
 #       "remote_addr": "127.0.0.1",
-#       "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:137.0) Gecko/20100101 Firefox/137.0"
+#       "user_agent": {
+#         "device": {
+#           "brand": "Apple",
+#           "family": "Mac",
+#           "model": "Mac"
+#         },
+#         "os": {
+#           "family": "Mac OS X",
+#           "major": "10",
+#           "minor": "15",
+#           "patch": null,
+#           "patch_minor": null
+#         },
+#         "user_agent": {
+#           "family": "Firefox",
+#           "major": "140",
+#           "minor": "0",
+#           "patch": null,
+#           "patch_minor": null
+#         },
+#         "string": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:140.0) Gecko/20100101 Firefox/140.0"
+#       }
 #     }
 #   }
 # }
@@ -115,31 +134,34 @@ from collections import defaultdict
 # ddb: dumb database
 class DDB(dict):
     def __init__(self, d={}, max_size=10000):
-        # TODO - trying to retain dict compatibility is becoming a mess with the call to super, the call to load, and the below d.items loop. Something needs to change here.
-        super().__init__(d)
         self._max_size = max_size
 
-        self.load()
+        if d:
+            # The user passed in data, so assume we should load that instead of data from disk.
+            for k, v in d.items():
+                if isinstance(v, dict):
+                    self[k] = _DDB(v, max_size=max_size)
+                else:
+                    raise TypeError(f"Invalid type for value {v} in dictionary. Expected dict, got {type(v)}")
+        else:
+            self.load()
 
-        for k, v in d.items():
-            if isinstance(v, dict):
-                self[k] = _DDB(v, max_size=max_size)
-            else:
-                raise TypeError(f"Invalid type for value {v} in dictionary. Expected dict, got {type(v)}")
+    def _get_id(self):
+        return request.args.get("id")
 
     def register(self):
-        id = request.args.get("id")
+        id = self._get_id()
         if id in self:
             raise KeyError(f"ID {id} already registered")
         super().__setitem__(id, _DDB(max_size=self._max_size))
 
     def unregister(self):
-        id = request.args.get("id")
+        id = self._get_id()
         if id in self:
             return self.pop(id)
 
     def __call__(self):
-        id = request.args.get("id")
+        id = self._get_id()
         data_set = {}
         for flask_request_key, serializer in C.FLASK_REQUEST_SERIALIZERS.items():
             data_set[flask_request_key] = serializer(getattr(request, flask_request_key, None))
@@ -180,124 +202,29 @@ class DDB(dict):
 
     @property
     def browser_family_counts(self):
-        browser_family_stats = defaultdict(int)
-        for id, ddb in self.items():
-            for browser_family, count_val in ddb.browser_family_counts.items():
-                browser_family_stats[browser_family] += count_val
-        return browser_family_stats
-
-    @property
-    def browser_family_counts_by_id(self):
-        browser_family_stats = defaultdict(lambda: defaultdict(int))
-        for id, ddb in self.items():
-            for browser_family, count in ddb.browser_family_counts_by_remote_addr.items():
-                for remote_addr, count_val in count.items():
-                    browser_family_stats[id][browser_family] += count_val
-        return browser_family_stats
-
-    @property
-    def browser_family_counts_by_remote_addr(self):
-        browser_family_stats = defaultdict(lambda: defaultdict(int))
-        for id, ddb in self.items():
-            for browser_family, count in ddb.browser_family_counts_by_remote_addr.items():
-                for remote_addr, count_val in count.items():
-                    browser_family_stats[browser_family][remote_addr] += count_val
-        return browser_family_stats
-
-    @property
-    def browser_family_counts_by_id_by_remote_addr(self):
-        browser_family_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
-        for id, ddb in self.items():
-            for browser_family, count in ddb.browser_family_counts_by_remote_addr.items():
-                for remote_addr, count_val in count.items():
-                    browser_family_stats[id][browser_family][remote_addr] += count_val
-        return browser_family_stats
-
+        return self._get_counts("browser_family_counts")
 
     @property
     def os_family_counts(self):
-        os_family_stats = defaultdict(int)
-        for id, ddb in self.items():
-            for os_family, count_val in ddb.os_family_counts.items():
-                os_family_stats[os_family] += count_val
-        return os_family_stats
-
-    @property
-    def os_family_counts_by_id(self):
-        os_family_stats = defaultdict(lambda: defaultdict(int))
-        for id, ddb in self.items():
-            for os_family, count in ddb.os_family_counts_by_remote_addr.items():
-                for remote_addr, count_val in count.items():
-                    os_family_stats[id][os_family] += count_val
-        return os_family_stats
-
-    # @property  # old way
-    # def os_family_counts_by_remote_addr(self):
-    #     os_family_stats = defaultdict(lambda: defaultdict(int))
-    #     for id, ddb in self.items():
-    #         for os_family, count in ddb.os_family_counts_by_remote_addr.items():
-    #             for remote_addr, count_val in count.items():
-    #                 os_family_stats[os_family][remote_addr] += count_val
-    #     return os_family_stats
-
-    @property  # New way with method re-use
-    def os_family_counts_by_remote_addr(self):
-        detailed_os_family_stats = self.os_family_counts_by_id_by_remote_addr
-        os_family_stats = defaultdict(lambda: defaultdict(int))
-        for id, remote_addr_stats in detailed_os_family_stats.items():
-            for remote_addr, os_family in remote_addr_stats.items():
-                for os_family, count_val in os_family.items():
-                    os_family_stats[remote_addr][os_family] += count_val
-        return os_family_stats
-
-    @property
-    def os_family_counts_by_id_by_remote_addr(self):
-        os_family_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
-        for id, ddb in self.items():
-            for os_family, count in ddb.os_family_counts_by_remote_addr.items():
-                for remote_addr, count_val in count.items():
-                    os_family_stats[id][os_family][remote_addr] += count_val
-        return os_family_stats
+        return self._get_counts("os_family_counts")
 
     @property
     def referrer_counts(self):
-        referrers_stats = defaultdict(int)
-        for id, ddb in self.items():
-            for referrer, count_val in ddb.referrer_counts.items():
-                referrers_stats[referrer] += count_val
-        return referrers_stats
+        return self._get_counts("referrer_counts")
 
-    @property
-    def referrer_counts_by_id(self):
-        referrer_stats = defaultdict(lambda: defaultdict(int))
+    def _get_counts(self, property):
+        stats = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
         for id, ddb in self.items():
-            for referrer, count in ddb.referrer_counts_by_remote_addr.items():
-                for remote_addr, count_val in count.items():
-                    referrer_stats[id][remote_addr] += count_val
-        return referrer_stats
-
-    @property
-    def referrer_counts_by_remote_addr(self):
-        referrer_stats = defaultdict(lambda: defaultdict(int))
-        for id, ddb in self.items():
-            for referrer, count in ddb.referrer_counts_by_remote_addr.items():
-                for remote_addr, count_val in count.items():
-                    referrer_stats[referrer][remote_addr] += count_val
-        return referrer_stats
-
-    @property
-    def referrer_counts_by_id_by_remote_addr(self):
-        referrer_stats = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
-        for id, ddb in self.items():
-            for referrer, count in ddb.referrer_counts_by_remote_addr.items():
-                for remote_addr, count_val in count.items():
-                    referrer_stats[id][referrer][remote_addr] += count_val
-        return referrer_stats
+            for referrer, count in getattr(ddb, property).items():
+                for value, _count in count.items():
+                    stats[id][referrer][value] += _count
+        return stats
 
 
 class _DDB(dict):
     def __init__(self, d={}, max_size=10000):
-        super().__init__(d)
+        for k, v in d.items():
+            self[k] = v
         self._max_size = max_size
 
     def __add__(self, user_data):
@@ -308,63 +235,31 @@ class _DDB(dict):
         self._cleanup()
         return self
 
-    def _get_user_agent(self, timestamp):
-        a = parse(self[timestamp]['user_agent'])
-        return a
-
     def _cleanup(self):
-        now = time()
         while len(self) > self._max_size:
             # it's silly that we have to cast to list here, but dict_keys is not subscriptable
             del self[list(self.keys())[0]]
 
     @property
     def browser_family_counts(self):
-        browser_family = defaultdict(int)
-        for timestamp in self.keys():
-            browser = self._get_user_agent(timestamp)
-            browser_family[browser.user_agent.family if browser else "Unknown"] += 1
-        return browser_family
-
-    @property
-    def browser_family_counts_by_remote_addr(self):
-        browser_family = defaultdict(lambda: defaultdict(int))
-        for timestamp in self.keys():
-            browser = self._get_user_agent(timestamp)
-            remote_addr = self[timestamp]['remote_addr']
-            browser_family[remote_addr][browser.user_agent.family if browser else "Unknown"] += 1
-        return browser_family
+        return self._get_counts("family", parents=["user_agent", "user_agent"])
 
     @property
     def os_family_counts(self):
-        os_family = defaultdict(int)
-        for timestamp in self.keys():
-            _os = self._get_user_agent(timestamp).os  # '_os' has leading underscore to avoid conflicts with the 'os' module
-            os_family[_os.family if _os else "Unknown"] += 1
-        return os_family
-
-    @property
-    def os_family_counts_by_remote_addr(self):
-        os_family = defaultdict(lambda: defaultdict(int))
-        for timestamp in self.keys():
-            _os = self._get_user_agent(timestamp).os  # '_os' has leading underscore to avoid conflicts with the 'os' module
-            remote_addr = self[timestamp]['remote_addr']
-            os_family[remote_addr][_os.family if _os else "Unknown"] += 1
-        return os_family
+        return self._get_counts("family", parents=["user_agent", "os"])
 
     @property
     def referrer_counts(self):
-        referrers = defaultdict(int)
-        for timestamp in self.keys():
-            referrer = self[timestamp]['referrer']
-            referrers[referrer if referrer else "Unknown"] += 1
-        return referrers
+        return self._get_counts("referrer")
 
-    @property
-    def referrer_counts_by_remote_addr(self):
-        referrers = defaultdict(lambda: defaultdict(int))
+    def _get_counts(self, property, parents=[]):
+        return_data = defaultdict(lambda: defaultdict(int))
         for timestamp in self.keys():
-            referrer = self[timestamp]['referrer']
-            remote_addr = self[timestamp]['remote_addr']
-            referrers[remote_addr][referrer if referrer else "Unknown"] += 1
-        return referrers
+            reference_object = self[timestamp]
+            for parent in parents:
+                reference_object = reference_object.get(parent) or "Unknown"
+
+            key = reference_object.get(property) or "Unknown"
+            remote_addr = self[timestamp]["remote_addr"]
+            return_data[remote_addr][key] += 1
+        return return_data

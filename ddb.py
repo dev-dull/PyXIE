@@ -224,14 +224,14 @@ class DDB(dict):
 class _DDB(dict):
     def __init__(self, d={}, max_size=10000):
         for k, v in d.items():
-            self[k] = v  # _db_record(v)
+            self[k] = v
         self._max_size = max_size
 
     def __add__(self, user_data):
         now = time()
         while now in self:
             sleep(0.1)
-        self[now] = user_data  # _db_record(user_data)
+        self[now] = user_data
         self._cleanup()
         return self
 

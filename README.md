@@ -93,7 +93,7 @@ Below is a complete list of user configurable settings:
 ### Register a new `id`
 The purpose of an `id` is to enable the user to differentiate between the various places a tracking pixel has been embedded. For example, you would want a different `id` for tracking if a user saw an email versus tracking embedded into a specific webpage.
 
-Make a `POST` request to the `/register` endpoint which specifies your new `id` as a parameter using an API key specified in your configuration as the value for a `X-Api-Key` header.
+Make a `POST` request to the `/register` endpoint which specifies your new `id` as a parameter using an API key specified in your configuration as the value for a `X-Api-Key` header. If successful, you should get a "Success" message and a status code of `201`.
 
 Here is an example that registers an `id` of `testing` for the service when it is running locally:
 ```bash
@@ -114,7 +114,7 @@ How you embed your pixel will depend on the document format, but here's an examp
 Because the image is a transparent PNG a single pixel in size, it is unlikely to significantly interfere with the formatting of any website, but placing it at the bottom of a page should minimize any potential formatting issues. Specifying the width and height (like in the example or using CSS) should mitigate the likelihood of a broken image icon on your page should PyXIE go offline, or the `id` to be unregistered.
 
 ### View or collect stats
-Statistics are only viewable to individuals who have a valid API key, and can be accessed using the `/stats` endpoint.
+Statistics are only viewable to individuals who have a valid API key, and can be accessed using the `/stats` endpoint. When successful, you should get valid JSON back as well as a status code of `200`.
 
 for example:
 ```bash
@@ -168,3 +168,11 @@ The data is structured in the following format (examples are from the first bloc
       - The value of the viewer data and the number of times that value has been seen (`Firefox` has been seen `1` time and `curl` has been seen `1` time)
 
 To put all of that together: One or more user at the IP address `192.168.1.99` saw a tracking pixel with an `id` of `foo`. Once with a "browser family" of `Firefox`, and another with `curl`.
+
+### Unregister an `id`
+Note that unregistering an ID is destructive and all data will be lost. If you wish to retain the data, make a copy of your datafile (e.g. `uadb.json`) first. If successful, you should get a "Success" message and a status code of `204`.
+
+```bash
+user@shell> curl -Ss -X DELETE -H 'X-Api-Key: your-api-key-here' 'http://127.0.0.1:5000/unregister?id=testing'
+Success
+```

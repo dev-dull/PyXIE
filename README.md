@@ -170,7 +170,7 @@ The data is structured in the following format (examples are from the first bloc
 To put all of that together: One or more user at the IP address `192.168.1.99` saw a tracking pixel with an `id` of `foo`. Once with a "browser family" of `Firefox`, and another with `curl`.
 
 ### Unregister an `id`
-Note that unregistering an ID is destructive and all data will be lost. If you wish to retain the data, make a copy of your datafile (e.g. `uadb.json`) first. If successful, you should get a "Success" message and a status code of `204`.
+Note that unregistering an ID is destructive and all data for that `id` will be lost. If you wish to retain the data, make a copy of your datafile (e.g. `uadb.json`) first. If successful, you should get a "Success" message and a status code of `204`.
 
 ```bash
 user@shell> curl -Ss -X DELETE -H 'X-Api-Key: your-api-key-here' 'http://127.0.0.1:5000/unregister?id=testing'

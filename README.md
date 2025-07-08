@@ -3,15 +3,6 @@
 A lightweight [Tracking Pixel](https://en.wikipedia.org/wiki/Tracking_Pixel?wprov=srpw1_0) service written in Python.
 
 ## Installation
-<!-- ### A quick note about the Docker image and port numbers
-The Docker container runs PyXIE using the WSGI tool Gnunicorn. If you are running PyXIE as a Docker container:
-- Do:
-  - Configure the environment variable `LISTEN_PORT` (default is `8000`)
-  - You can also configure the environment variable `LISTEN_IP` but it is unlikely you will want to change this (default is `0.0.0.0`)
-- Not recommended:
-  - Setting `LISTEN_PORT` in `config.yaml` (if you set it, leave it as the default value, `5000`)
-  - Setting `LISTEN_IP` in `config.yaml` -->
-
 ### Quickstart using Docker
 #### Pull the image from Dockerhub
 ```bash

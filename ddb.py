@@ -150,7 +150,7 @@ class DDB(dict):
         return request.args.get("id")
 
     def register(self):
-        id = self._get_id()
+        id = request.form.get("id")
         if id in self:
             raise KeyError(f"ID {id} already registered")
         super().__setitem__(id, _DDB(max_size=self._max_size))
@@ -181,13 +181,13 @@ class DDB(dict):
         for v in self.values():
             v._cleanup()
 
-    def dump(self, filename="uadb.json"):
+    def dump(self, filename=C.DATABASE_FILE):
         with open(filename, "w") as fout:
             json.dump(self, fout, indent=2)
             fout.flush()
             fout.truncate()
 
-    def load(self, filename="uadb.json"):
+    def load(self, filename=C.DATABASE_FILE):
         try:
             with open(filename, "r") as fin:
                 data = json.load(fin)

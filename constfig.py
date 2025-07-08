@@ -13,6 +13,8 @@ class _C(object):
         self.LISTEN_PORT = 5000
         self.API_KEYS = []
         self.LOG_LEVEL = "WARNING"
+        self.DATABASE_FILE = "uadb.json"
+        self.RRD_MAX_SIZE = 10000  # Maximum number of records in the database
 
         # Load user config (override defaults above)
         self.load_config()

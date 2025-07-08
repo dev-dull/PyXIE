@@ -1,0 +1,51 @@
+name: Build Docker Image
+on:
+  schedule:
+    # Refresh monthly to pick up base image updates
+    # Base image refreshes on the 1st, so run on the 2nd to capture upstream changes.
+    - cron: '0 0 2 * *'
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: anothrNick/github-tag-action@1.71.0
+        id: bump_version
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+          DEFAULT_BUMP: patch
+          WITH_V: true
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/metadata-action@v5
+        id: docker_meta
+        with:
+          images: |
+            devdull/${{ github.event.repository.name }}
+          tags: |
+            # Tag branches with branch name, but disable for default branch
+            type=ref,event=branch,enable=${{ github.ref_name != 'main' }}
+            # set latest tag for default branch
+            type=raw,value=latest,enable=${{ github.ref_name == 'main' }}
+            # Always tag with the current version number
+            type=raw,value=${{ steps.bump_version.outputs.new_tag }},enable=${{ github.ref_name == 'main' }}
+
+      - uses: docker/build-push-action@v5
+        id: docker_build
+        with:
+          platforms: linux/amd64,linux/arm,linux/arm64
+          push: ${{ github.repository_owner == 'dev-dull' }}
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}

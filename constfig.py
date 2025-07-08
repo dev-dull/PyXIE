@@ -9,7 +9,7 @@ from collections.abc import Iterable
 class _C(object):
     def __init__(self):
         # Default values for user configurable items
-        self.LISTEN_IP = "0.0.0.0"
+        self.LISTEN_IP = "127.0.0.1"
         self.LISTEN_PORT = 5000
         self.API_KEYS = []
         self.LOG_LEVEL = "WARNING"

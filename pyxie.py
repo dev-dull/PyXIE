@@ -10,9 +10,7 @@ _data = DDB(max_size=C.RRD_MAX_SIZE)
 
 def _validate_api_key():
     api_key = request.headers.get(C.HTTP_HEADER_X_API_KEY)
-    if api_key in C.API_KEYS:
-        return True
-    return False
+    return api_key in C.API_KEYS
 
 
 @pyxie.route("/register", methods=[C.HTTP_METHOD_POST])
@@ -52,7 +50,11 @@ def metrics():
 
 @pyxie.route("/", methods=[C.HTTP_METHOD_GET])
 def root():
-    _data()
+    try:
+        _data()
+    except KeyError as e:
+        return "Not Found", 404
+
     return Response(C.ONE_BY_ONE, mimetype=C.HTTP_MIME_TYPE_PNG)
 
 

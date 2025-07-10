@@ -231,6 +231,7 @@ class _DDB(dict):
         now = time()
         while now in self:
             sleep(0.1)
+            now = time()
         self[now] = user_data
         self._cleanup()
         return self

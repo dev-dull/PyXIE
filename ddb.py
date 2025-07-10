@@ -215,9 +215,9 @@ class DDB(dict):
     def _get_counts(self, property):
         stats = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
         for id, ddb in self.items():
-            for referrer, count in getattr(ddb, property).items():
+            for remote_ip, count in getattr(ddb, property).items():
                 for value, _count in count.items():
-                    stats[id][referrer][value] += _count
+                    stats[id][remote_ip][value] += _count
         return stats
 
 

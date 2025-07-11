@@ -167,3 +167,11 @@ Note that unregistering an ID is destructive and all data for that `id` will be 
 user@shell> curl -Ss -X DELETE -H 'X-Api-Key: your-api-key-here' 'http://127.0.0.1:5000/unregister?id=testing'
 Success
 ```
+
+### Cleanly shutting down PyXIE
+If PyXIE is killed while in the middle of persisting data to disk, it will likely result in a corrupted file. To ensure that your data is complete and well formed, use one of your defined API keys ot send a `POST` request to the `/shutdown` endpoint like in the following example. This will tell PyXIE to write all data to disk and exit.
+
+```bash
+user@shell>  curl -Ss -X POST -H 'X-Api-Key: your-api-key-here' 'http://127.0.0.1:5000/shutdown'
+curl: (52) Empty reply from server
+```

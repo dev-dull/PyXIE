@@ -1,6 +1,5 @@
 import os
 from ddb import DDB
-from time import time, sleep
 from constfig import C
 from flask import Flask, Response, request, abort
 

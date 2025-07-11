@@ -20,6 +20,10 @@ class _C(object):
         self.load_config()
 
     def set_constants(self):
+        # `C` (the instance of `_C()` set below) is only created once even though it is imported in `ddb` and `pyxie`.
+        # Probably not a good idea for _SHUTDOWN to depend on that behavior for the long term. Only used in `pyxie` currently.
+        self._SHUTDOWN = False  # Toggled to true to cleanly stop the service and ensure data is persisted to disk.
+
         # Constant values
         self.APP_NAME = "pyxie"
         self.LOG = logging.getLogger(self.APP_NAME)

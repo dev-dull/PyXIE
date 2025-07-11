@@ -1,4 +1,8 @@
 ## PyXIE
+<p align="center">
+  <img src=".pyxie_logo.png" width="480" height="480" />
+</p>
+
 ### About
 A lightweight [Tracking Pixel](https://en.wikipedia.org/wiki/Tracking_Pixel?wprov=srpw1_0) service written in Python.
 

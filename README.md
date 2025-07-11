@@ -2,6 +2,7 @@
 <p align="center">
   <img src=".pyxie_logo.png" width="240" height="240" />
 </p>
+
 ### About
 A lightweight [Tracking Pixel](https://en.wikipedia.org/wiki/Tracking_Pixel?wprov=srpw1_0) service written in Python.
 
